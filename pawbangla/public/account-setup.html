@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173f36"><meta name="description" content="Create your private PawBangla member profile to share approved pet photos and urgent lost, found or injured pet reports.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>My PawBangla account</title>
+  <style>
+    :root{--forest:#173f36;--paper:#f8f7f1;--ink:#1d302a;--muted:#66746d;--line:#dfe5dc;--coral:#e47760;--white:#fffefa}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 85% 5%,#eaf0df,transparent 35%),var(--paper);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif}a{color:inherit}.top{height:76px;display:flex;align-items:center;justify-content:space-between;width:min(980px,calc(100% - 32px));margin:auto}.brand{font-weight:850;color:var(--forest);text-decoration:none;font-size:20px}.brand span{display:inline-grid;place-items:center;background:#e8efe3;border-radius:12px;width:36px;height:36px;margin-right:8px}.top>a:last-child{color:var(--forest);font-size:13px;font-weight:800}.card{width:min(560px,calc(100% - 32px));margin:44px auto 70px;padding:clamp(22px,5vw,38px);background:var(--white);border:1px solid var(--line);border-radius:26px;box-shadow:0 24px 70px #173f3612}.kicker{color:var(--coral);text-transform:uppercase;font-size:11px;letter-spacing:.13em;font-weight:850}h1{color:var(--forest);font-size:clamp(31px,6vw,43px);line-height:1.05;letter-spacing:-.05em;margin:10px 0}p{color:var(--muted)}.private{border-radius:15px;background:#edf4ec;padding:14px 16px;color:#45574b;font-size:13px;margin:20px 0}.private strong{color:var(--forest)}form{display:grid;gap:13px;margin-top:22px}label{display:grid;gap:6px;color:#43564a;font-size:13px;font-weight:800}input,select{border:1px solid var(--line);border-radius:12px;background:white;padding:12px 13px;font:inherit;color:var(--ink)}.btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:999px;background:var(--forest);color:white;text-decoration:none;padding:13px 19px;font:inherit;font-weight:800;cursor:pointer}.btn:disabled{opacity:.55;cursor:wait}.status{min-height:22px;font-size:13px;color:var(--forest)}.rules{display:grid;gap:9px;margin-top:21px}.rule{border-top:1px solid var(--line);padding-top:10px;font-size:13px;color:var(--muted)}.rule strong{color:var(--forest)}.hidden{display:none!important}@media(prefers-reduced-motion:no-preference){.card{animation:rise .45s ease-out both}@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}}
+  </style>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/" target="_top"><span>🐾</span>PawBangla</a><a href="/" target="_top">Back to home →</a></header>
+  <main class="card">
+    <span class="kicker">Your private member profile</span><h1>Create your PawBangla account</h1>
+    <p>Sign in and add a few basic details. Your email and profile are private; they are not shown on pet posts.</p>
+    <div class="private"><strong>Account access:</strong> this pilot uses secure ChatGPT sign-in and does not ask for or store a ChatGPT password. Password sign-in will need a separate identity provider before moving to Vercel or your own Cloudflare account.</div>
+    <div id="signedOut" class="hidden"><p>Sign in to create or update your member profile.</p><a id="signIn" class="btn" href="/signin-with-chatgpt?return_to=%2Faccount-setup.html" target="_top">Sign in to continue ↗</a></div>
+    <section id="accountPanel" class="hidden">
+      <p id="accountEmail"></p>
+      <form id="accountForm">
+        <label for="displayName">Name to use on your account<input id="displayName" name="displayName" autocomplete="name" minlength="2" maxlength="60" required></label>
+        <label for="division">Your division<select id="division" name="division" required><option value="">Choose a division</option><option>Barishal</option><option>Chattogram</option><option>Dhaka</option><option>Khulna</option><option>Mymensingh</option><option>Rajshahi</option><option>Rangpur</option><option>Sylhet</option></select></label>
+        <button id="saveAccount" class="btn" type="submit">Create my account</button>
+      </form>
+      <p id="accountStatus" class="status" role="status"></p>
+      <div class="rules"><div class="rule"><strong>Photos and Pet SOS:</strong> available as soon as your account is created. Community photos stay private until approved; Pet SOS reports publish immediately.</div><div class="rule"><strong>Adoption posts:</strong> unlock 12 hours after account creation and still require the existing in-person identity check and human review.</div></div>
+    </section>
+  </main>
+  <script>
+    const signedOut=document.getElementById('signedOut'),panel=document.getElementById('accountPanel'),form=document.getElementById('accountForm'),status=document.getElementById('accountStatus'),button=document.getElementById('saveAccount');
+    async function loadAccount(){try{const response=await fetch('/api/account',{cache:'no-store',credentials:'same-origin'}),data=await response.json();if(response.status===401){signedOut.classList.remove('hidden');return}if(!response.ok)throw Error(data.error||'Could not load account.');panel.classList.remove('hidden');document.getElementById('accountEmail').textContent=`Signed in as ${data.email}`;if(data.exists){document.getElementById('displayName').value=data.account.displayName;document.getElementById('division').value=data.account.division;button.textContent='Save profile';status.textContent=data.canPostAdoption?'Your account is ready for adoption posts, subject to the in-person identity check.':`Adoption posts unlock ${new Date(data.adoptionEligibleAt).toLocaleString()}.`}}catch(error){panel.classList.remove('hidden');status.textContent=error.message||'Account details are temporarily unavailable.';button.disabled=true}}
+    form.addEventListener('submit',async event=>{event.preventDefault();button.disabled=true;status.textContent='Saving your account…';try{const response=await fetch('/api/account',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({displayName:form.displayName.value,division:form.division.value})}),data=await response.json();if(!response.ok)throw Error(data.error||'Could not create your account.');status.textContent=data.canPostAdoption?'Your PawBangla account is ready. Adoption posts are available after the in-person identity check.':`Account created. You can share photos and Pet SOS reports now. Adoption posts unlock ${new Date(data.adoptionEligibleAt).toLocaleString()}.`;button.textContent='Save profile'}catch(error){status.textContent=error.message||'Could not save your account.'}finally{button.disabled=false}});
+    loadAccount();
+  </script>
+</body>
+</html>
