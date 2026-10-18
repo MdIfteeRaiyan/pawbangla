@@ -8,17 +8,15 @@ import { connectorPreview } from "./build/connector-preview-plugin.mjs";
 const SITE_CREATOR_PLACEHOLDER_DATABASE_ID =
   "00000000-0000-4000-8000-000000000000";
 
-const { d1, r2 } = hostingConfig;
+const { d1 } = hostingConfig;
 const databaseId = process.env.PAWBANGLA_D1_DATABASE_ID || SITE_CREATOR_PLACEHOLDER_DATABASE_ID;
 const databaseName = process.env.PAWBANGLA_D1_DATABASE_NAME || "pawbangla-db";
-const bucketName = process.env.PAWBANGLA_R2_BUCKET_NAME || "pawbangla-uploads";
 if (
   process.env.WORKERS_CI === "1" &&
-  ((d1 && !process.env.PAWBANGLA_D1_DATABASE_ID) ||
-    (r2 && !process.env.PAWBANGLA_R2_BUCKET_NAME))
+  d1 && !process.env.PAWBANGLA_D1_DATABASE_ID
 ) {
   throw new Error(
-    "Set PAWBANGLA_D1_DATABASE_ID and PAWBANGLA_R2_BUCKET_NAME in Cloudflare Workers Builds before deploying PawBangla.",
+    "Set PAWBANGLA_D1_DATABASE_ID in Cloudflare Workers Builds before deploying PawBangla.",
   );
 }
 
@@ -36,14 +34,6 @@ const localBindingConfig = {
           database_name: databaseName,
           database_id: databaseId,
           migrations_dir: "../../drizzle",
-        },
-      ]
-    : [],
-  r2_buckets: r2
-    ? [
-        {
-          binding: r2,
-          bucket_name: bucketName,
         },
       ]
     : [],
