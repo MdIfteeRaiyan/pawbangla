@@ -9,8 +9,43 @@ export function json(data: unknown, status = 200) {
 }
 
 export function runtime() {
-  if (!env.DB || !env.BUCKET) throw new Error("Storage is not configured");
-  return { db: env.DB, bucket: env.BUCKET };
+  if (!env.DB) throw new Error("Database is not configured");
+  const supabaseUrl = env.PAWBANGLA_SUPABASE_URL?.replace(/\/$/, "");
+  const serviceKey = env.PAWBANGLA_SUPABASE_SECRET_KEY;
+  const bucketName = env.PAWBANGLA_SUPABASE_STORAGE_BUCKET || "pawbangla-media";
+  if (!supabaseUrl || !serviceKey) throw new Error("Image storage is not configured");
+  const objectUrl = (key: string) => `${supabaseUrl}/storage/v1/object/${encodeURIComponent(bucketName)}/${key.split("/").map(encodeURIComponent).join("/")}`;
+  const headers = { apikey: serviceKey };
+  const bucket = {
+    async put(key: string, body: Uint8Array, options?: { httpMetadata?: { contentType?: string; cacheControl?: string } }) {
+      const response = await fetch(objectUrl(key), {
+        method: "POST",
+        headers: {
+          ...headers,
+          "Content-Type": options?.httpMetadata?.contentType || "application/octet-stream",
+          ...(options?.httpMetadata?.cacheControl ? { "Cache-Control": options.httpMetadata.cacheControl } : {}),
+          "x-upsert": "false",
+        },
+        body: body as unknown as BodyInit,
+      });
+      if (!response.ok) throw new Error(`Image upload failed (${response.status}).`);
+    },
+    async get(key: string) {
+      const response = await fetch(objectUrl(key), { headers });
+      if (response.status === 404) return null;
+      if (!response.ok) throw new Error(`Image retrieval failed (${response.status}).`);
+      return { body: response.body, size: Number(response.headers.get("content-length") || 0) };
+    },
+    async delete(key: string) {
+      const response = await fetch(`${supabaseUrl}/storage/v1/object/${encodeURIComponent(bucketName)}`, {
+        method: "DELETE",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ prefixes: [key] }),
+      });
+      if (!response.ok && response.status !== 404) throw new Error(`Image deletion failed (${response.status}).`);
+    },
+  };
+  return { db: env.DB, bucket };
 }
 
 let communitySchemaReady: Promise<void> | null = null;

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#173f36"><meta name="description" content="Sign in to PawBangla with Google or your email to share pet photos, adoption listings, and urgent Pet SOS reports.">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg"><title>Sign in · PawBangla</title>
+  <style>
+    :root{--forest:#173f36;--paper:#f8f7f1;--ink:#1d302a;--muted:#66746d;--line:#dfe5dc;--coral:#e47760;--white:#fffefa}*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(ellipse at 85% 5%,#eaf0df,transparent 38%),var(--paper);color:var(--ink);font:16px/1.55 Inter,system-ui,sans-serif}.top{height:76px;display:flex;align-items:center;justify-content:space-between;width:min(980px,calc(100% - 32px));margin:auto}.brand{font-weight:850;color:var(--forest);text-decoration:none;font-size:20px}.brand span{display:inline-grid;place-items:center;background:#e8efe3;border-radius:12px;width:36px;height:36px;margin-right:8px}.top>a:last-child{color:var(--forest);font-size:13px;font-weight:800}.card{width:min(510px,calc(100% - 32px));margin:32px auto 68px;padding:clamp(22px,5vw,38px);background:var(--white);border:1px solid var(--line);border-radius:26px;box-shadow:0 24px 70px #173f3612}.kicker{color:var(--coral);text-transform:uppercase;font-size:11px;letter-spacing:.13em;font-weight:850}h1{color:var(--forest);font-size:clamp(31px,6vw,43px);line-height:1.05;letter-spacing:-.05em;margin:10px 0}p{color:var(--muted)}label{display:grid;gap:6px;color:#43564a;font-size:13px;font-weight:800;margin:14px 0 0}input{width:100%;border:1px solid var(--line);border-radius:12px;background:white;padding:12px 13px;font:inherit;color:var(--ink)}button,.button{display:flex;align-items:center;justify-content:center;width:100%;border:0;border-radius:999px;background:var(--forest);color:white;text-decoration:none;padding:13px 18px;font:inherit;font-weight:800;cursor:pointer;margin-top:14px}.google{background:#fff;color:#25332c;border:1px solid var(--line)}button:disabled{opacity:.55;cursor:wait}.divider{display:flex;align-items:center;gap:12px;color:#89938d;font-size:12px;margin:18px 0}.divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}.row{display:flex;gap:12px;margin-top:8px}.row button{width:50%}.link{display:block;border:0;background:transparent;color:var(--forest);font:inherit;font-size:13px;font-weight:750;text-decoration:underline;cursor:pointer;margin:10px auto 0;padding:7px}.status{min-height:25px;font-size:13px;color:var(--forest);margin:14px 0}.status.error{color:#a23c31}.note{font-size:12px;border-top:1px solid var(--line);padding-top:15px;margin-top:20px}.hidden{display:none!important}@media(max-width:460px){.row{display:grid;gap:0}.row button{width:100%}}
+  </style>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/" target="_top"><span>🐾</span>PawBangla</a><a href="/" target="_top">Back to home →</a></header>
+  <main class="card">
+    <span class="kicker">Your PawBangla account</span><h1>Good care starts together.</h1>
+    <p>Sign in to share pet photos, post adoption listings, and report an urgent Pet SOS.</p>
+    <button id="google" class="google" type="button">Continue with Google</button>
+    <div class="divider">or use email</div>
+    <form id="authForm">
+      <label for="email">Email address<input id="email" type="email" autocomplete="email" required></label>
+      <label for="password">Password<input id="password" type="password" autocomplete="current-password" minlength="8" required></label>
+      <div class="row"><button id="signin" type="submit">Sign in</button><button id="signup" type="button">Create account</button></div>
+    </form>
+    <button id="reset" class="link" type="button">Forgot password?</button>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+    <p class="note">Email and password sign-in is provided by Firebase Authentication. PawBangla does not see or store your password. Verify your email before using account features. Adoption posts unlock 12 hours after your PawBangla profile is created.</p>
+  </main>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, signInWithEmailAndPassword, createUserWithEmailAndPassword, sendEmailVerification, sendPasswordResetEmail, onIdTokenChanged, signOut } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+    const status=document.getElementById('status'),google=document.getElementById('google'),signIn=document.getElementById('signin'),signUp=document.getElementById('signup'),reset=document.getElementById('reset'),form=document.getElementById('authForm');
+    const say=(text,error=false)=>{status.textContent=text;status.classList.toggle('error',error)};
+    const friendly=(code)=>({ 'auth/invalid-credential':'Email or password is incorrect.','auth/email-already-in-use':'An account already uses this email. Sign in instead.','auth/weak-password':'Use a password with at least 8 characters.','auth/popup-closed-by-user':'Google sign-in was closed before completion.','auth/unauthorized-domain':'This Cloudflare hostname is not yet authorized in Firebase.','auth/too-many-requests':'Too many attempts. Wait a little and try again.' }[code]||'Sign-in could not be completed. Please try again.');
+    const safeReturn=()=>{let value=new URL(location.href).searchParams.get('return_to')||'/account-setup.html';return value.startsWith('/')&&!value.startsWith('//')?value:'/account-setup.html'};
+    let auth;
+    try{
+      const response=await fetch('/api/auth/config',{cache:'no-store'}),data=await response.json();
+      if(!response.ok||!data.configured)throw Error('Firebase is not configured yet. Finish the Firebase setup in Cloudflare before enabling sign-in.');
+      auth=getAuth(initializeApp(data.config));
+    }catch(error){say(error.message||'Could not load sign-in settings.',true);[google,signIn,signUp,reset].forEach(button=>button.disabled=true)}
+    if(auth){
+      const syncSession=async(user)=>{if(!user){await fetch('/api/auth/session',{method:'DELETE',credentials:'same-origin'}).catch(()=>{});return}if(!user.emailVerified){await signOut(auth);say('Check your inbox and verify your email before signing in.',true);return}const token=await user.getIdToken();const response=await fetch('/api/auth/session',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({idToken:token})});if(!response.ok)throw Error((await response.json()).error||'Could not create a secure session.');location.replace(safeReturn())};
+      onIdTokenChanged(auth,user=>{if(user)syncSession(user).catch(error=>say(error.message||'Could not create a secure session.',true))});
+      google.addEventListener('click',async()=>{google.disabled=true;say('Connecting to Google…');try{const provider=new GoogleAuthProvider();if(matchMedia('(max-width: 700px)').matches){await signInWithRedirect(auth,provider);return}await signInWithPopup(auth,provider)}catch(error){if(error.code==='auth/popup-blocked'){try{await signInWithRedirect(auth,new GoogleAuthProvider());return}catch(redirectError){say(friendly(redirectError.code),true)}}else say(friendly(error.code),true)}finally{google.disabled=false}});
+      form.addEventListener('submit',async event=>{event.preventDefault();signIn.disabled=true;say('Signing in…');try{await signInWithEmailAndPassword(auth,document.getElementById('email').value.trim(),document.getElementById('password').value)}catch(error){say(friendly(error.code),true)}finally{signIn.disabled=false}});
+      signUp.addEventListener('click',async()=>{signUp.disabled=true;say('Creating your account…');try{const credential=await createUserWithEmailAndPassword(auth,document.getElementById('email').value.trim(),document.getElementById('password').value);await sendEmailVerification(credential.user);await signOut(auth);say('Account created. Check your email and verify your address, then sign in.')}catch(error){say(friendly(error.code),true)}finally{signUp.disabled=false}});
+      reset.addEventListener('click',async()=>{const email=document.getElementById('email').value.trim();if(!email){say('Enter your email address first, then choose Forgot password.',true);return}try{await sendPasswordResetEmail(auth,email);say('If an account uses that email, a password reset link has been sent.')}catch(error){say(friendly(error.code),true)}});
+    }
+  </script>
+</body>
+</html>

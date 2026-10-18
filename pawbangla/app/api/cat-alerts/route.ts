@@ -93,7 +93,6 @@ export async function POST(request: Request) {
     const photoKey = image ? `cat-alerts/approved/${id}/${crypto.randomUUID()}` : null;
     if (image && photoKey) await bucket.put(photoKey, image.bytes, {
       httpMetadata: { contentType: image.type, cacheControl: "public, max-age=300" },
-      customMetadata: { status: "approved", type: "pet-alert" },
     });
     try {
       await db.prepare(`INSERT INTO cat_alerts

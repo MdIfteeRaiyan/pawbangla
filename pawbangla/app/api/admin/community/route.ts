@@ -1,11 +1,12 @@
-import { ensureCommunityTable, json, requireReviewer, runtime } from "../../_lib";
+import { databaseRuntime } from "../../_db";
+import { ensureCommunityTable, json, requireReviewer } from "../../_lib";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!(await requireReviewer())) return json({ error: "Reviewer access required." }, 403);
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCommunityTable(db);
     const result = await db.prepare(`SELECT id, pet_name AS petName, caption, status, created_at AS createdAt
       FROM community_posts WHERE status IN ('pending', 'escalated')

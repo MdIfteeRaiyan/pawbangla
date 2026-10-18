@@ -101,7 +101,6 @@ export async function POST(request: Request) {
     const objectKey = `pending/${id}/${crypto.randomUUID()}`;
     await bucket.put(objectKey, photo.bytes, {
       httpMetadata: { contentType: photo.type, cacheControl: "private, no-store" },
-      customMetadata: { status: "pending" },
     });
     try {
       await db

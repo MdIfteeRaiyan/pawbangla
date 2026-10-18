@@ -1,11 +1,12 @@
-import { ensureCatAlertsTable, json, requireReviewer, runtime } from "../../_lib";
+import { databaseRuntime } from "../../_db";
+import { ensureCatAlertsTable, json, requireReviewer } from "../../_lib";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!(await requireReviewer())) return json({ error: "Reviewer access required." }, 403);
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCatAlertsTable(db);
     const result = await db.prepare(`SELECT id, report_type AS type, species, cat_description AS catDescription, status,
       event_time AS eventTime, location, landmark, latitude, longitude, details, contact_phone AS contactPhone,

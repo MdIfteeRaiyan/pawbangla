@@ -1,11 +1,12 @@
-import { ensureIdentityChecksTable, json, requireReviewer, runtime } from "../../_lib";
+import { databaseRuntime } from "../../_db";
+import { ensureIdentityChecksTable, json, requireReviewer } from "../../_lib";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   if (!(await requireReviewer())) return json({ error: "Reviewer access required." }, 403);
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureIdentityChecksTable(db);
     const result = await db
       .prepare(
