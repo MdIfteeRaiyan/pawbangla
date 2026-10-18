@@ -1,5 +1,5 @@
 {
-  "name": "site-creator-vinext-starter",
+  "name": "pawbangla",
   "version": "0.1.0",
   "private": true,
   "engines": {
@@ -10,6 +10,9 @@
     "dev": "node scripts/run-framework.mjs dev",
     "build": "node scripts/run-framework.mjs build",
     "start": "node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js dev --config dist/server/wrangler.json --local --persist-to .wrangler/state --ip 127.0.0.1 --inspector-port 0",
+    "deploy:cloudflare": "wrangler deploy --config dist/server/wrangler.json",
+    "preview:cloudflare": "wrangler preview --config dist/server/wrangler.json",
+    "db:migrate:cloudflare": "wrangler d1 migrations apply DB --remote --config dist/server/wrangler.json",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },

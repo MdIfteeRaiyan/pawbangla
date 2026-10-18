@@ -13,10 +13,10 @@
   <main class="card">
     <span class="kicker">Your private member profile</span><h1>Create your PawBangla account</h1>
     <p>Sign in and add a few basic details. Your email and profile are private; they are not shown on pet posts.</p>
-    <div class="private"><strong>Account access:</strong> this pilot uses secure ChatGPT sign-in and does not ask for or store a ChatGPT password. Password sign-in will need a separate identity provider before moving to Vercel or your own Cloudflare account.</div>
-    <div id="signedOut" class="hidden"><p>Sign in to create or update your member profile.</p><a id="signIn" class="btn" href="/signin-with-chatgpt?return_to=%2Faccount-setup.html" target="_top">Sign in to continue ↗</a></div>
+    <div class="private"><strong>Account access:</strong> sign in securely with Google or email and password. PawBangla never sees or stores your password.</div>
+    <div id="signedOut" class="hidden"><p>Sign in to create or update your member profile.</p><a id="signIn" class="btn" href="/login.html?return_to=%2Faccount-setup.html" target="_top">Sign in to continue ↗</a></div>
     <section id="accountPanel" class="hidden">
-      <p id="accountEmail"></p>
+      <p id="accountEmail"></p><button id="signOut" class="btn" type="button">Sign out</button>
       <form id="accountForm">
         <label for="displayName">Name to use on your account<input id="displayName" name="displayName" autocomplete="name" minlength="2" maxlength="60" required></label>
         <label for="division">Your division<select id="division" name="division" required><option value="">Choose a division</option><option>Barishal</option><option>Chattogram</option><option>Dhaka</option><option>Khulna</option><option>Mymensingh</option><option>Rajshahi</option><option>Rangpur</option><option>Sylhet</option></select></label>
@@ -26,8 +26,12 @@
       <div class="rules"><div class="rule"><strong>Photos and Pet SOS:</strong> available as soon as your account is created. Community photos stay private until approved; Pet SOS reports publish immediately.</div><div class="rule"><strong>Adoption posts:</strong> unlock 12 hours after account creation and still require the existing in-person identity check and human review.</div></div>
     </section>
   </main>
-  <script>
-    const signedOut=document.getElementById('signedOut'),panel=document.getElementById('accountPanel'),form=document.getElementById('accountForm'),status=document.getElementById('accountStatus'),button=document.getElementById('saveAccount');
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-app.js';
+    import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/12.0.0/firebase-auth.js';
+    const signedOut=document.getElementById('signedOut'),panel=document.getElementById('accountPanel'),form=document.getElementById('accountForm'),status=document.getElementById('accountStatus'),button=document.getElementById('saveAccount'),signOutButton=document.getElementById('signOut');
+    let firebaseAuth=null;try{const configResponse=await fetch('/api/auth/config',{cache:'no-store'}),configData=await configResponse.json();if(configData.configured)firebaseAuth=getAuth(initializeApp(configData.config))}catch{}
+    signOutButton.addEventListener('click',async()=>{signOutButton.disabled=true;try{if(firebaseAuth)await signOut(firebaseAuth);await fetch('/api/auth/session',{method:'DELETE',credentials:'same-origin'});location.replace('/')}catch{status.textContent='Could not sign out cleanly. Please retry.';signOutButton.disabled=false}});
     async function loadAccount(){try{const response=await fetch('/api/account',{cache:'no-store',credentials:'same-origin'}),data=await response.json();if(response.status===401){signedOut.classList.remove('hidden');return}if(!response.ok)throw Error(data.error||'Could not load account.');panel.classList.remove('hidden');document.getElementById('accountEmail').textContent=`Signed in as ${data.email}`;if(data.exists){document.getElementById('displayName').value=data.account.displayName;document.getElementById('division').value=data.account.division;button.textContent='Save profile';status.textContent=data.canPostAdoption?'Your account is ready for adoption posts, subject to the in-person identity check.':`Adoption posts unlock ${new Date(data.adoptionEligibleAt).toLocaleString()}.`}}catch(error){panel.classList.remove('hidden');status.textContent=error.message||'Account details are temporarily unavailable.';button.disabled=true}}
     form.addEventListener('submit',async event=>{event.preventDefault();button.disabled=true;status.textContent='Saving your account…';try{const response=await fetch('/api/account',{method:'POST',credentials:'same-origin',headers:{'Content-Type':'application/json'},body:JSON.stringify({displayName:form.displayName.value,division:form.division.value})}),data=await response.json();if(!response.ok)throw Error(data.error||'Could not create your account.');status.textContent=data.canPostAdoption?'Your PawBangla account is ready. Adoption posts are available after the in-person identity check.':`Account created. You can share photos and Pet SOS reports now. Adoption posts unlock ${new Date(data.adoptionEligibleAt).toLocaleString()}.`;button.textContent='Save profile'}catch(error){status.textContent=error.message||'Could not save your account.'}finally{button.disabled=false}});
     loadAccount();

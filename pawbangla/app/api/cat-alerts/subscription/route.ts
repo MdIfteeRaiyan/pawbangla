@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT before enabling email alerts." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla before enabling email alerts." }, 401);
   let consent = "";
   try { consent = String((await request.json() as { consent?: string }).consent ?? ""); } catch {}
   if (consent !== "yes") return json({ error: "Confirm email alert consent." }, 400);
@@ -35,7 +35,7 @@ export async function POST(request: Request) {
 export async function DELETE(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT to change email alert settings." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla to change email alert settings." }, 401);
   try {
     const { db } = runtime();
     await ensureCatAlertsTable(db);

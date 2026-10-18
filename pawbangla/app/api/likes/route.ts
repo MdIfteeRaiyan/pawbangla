@@ -7,7 +7,7 @@ type TargetType = "adoption" | "community";
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT to like a post." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla to like a post." }, 401);
 
   let body: { type?: unknown; postId?: unknown; action?: unknown };
   try { body = await request.json() as typeof body; }

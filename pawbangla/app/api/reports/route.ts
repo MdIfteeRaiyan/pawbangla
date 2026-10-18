@@ -14,7 +14,7 @@ const DIRECTORY_REASONS = new Set([
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT to send a private report." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla to send a private report." }, 401);
   if (Number(request.headers.get("content-length") || 0) > 16_000) return json({ error: "Report is too large." }, 413);
 
   let body: Record<string, unknown>;

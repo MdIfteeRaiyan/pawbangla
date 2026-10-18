@@ -5,7 +5,6 @@ export const metadata: Metadata = {
   title: "PawBangla — Care starts close to home",
   description: "Find free pet rehoming and local animal care resources across Bangladesh, starting in Chattogram.",
   icons: { icon: "/favicon.svg", shortcut: "/favicon.svg" },
-  metadataBase: new URL("https://pawbangla-chattogram-pilot.mahfuz085-cuet.chatgpt.site"),
   openGraph: {
     title: "PawBangla — Care starts close to home",
     description: "Free pet rehoming, clinic and shop discovery, care information, community photos and immediate Pet SOS reports.",

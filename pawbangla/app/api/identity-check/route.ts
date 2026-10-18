@@ -18,7 +18,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT before requesting an identity check." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla before requesting an identity check." }, 401);
   let body: { fullName?: string; consent?: string } = {};
   try { body = await request.json() as typeof body; } catch {}
   const fullName = String(body.fullName ?? "").trim().replace(/\s+/g, " ");

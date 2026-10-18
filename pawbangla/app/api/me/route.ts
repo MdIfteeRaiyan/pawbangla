@@ -10,7 +10,7 @@ export async function GET() {
 export async function DELETE(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with the same ChatGPT account to request data deletion." }, 401);
+  if (!user) return json({ error: "Sign in with the same PawBangla account to request data deletion." }, 401);
   try {
     const { db, bucket } = runtime();
     await Promise.all([ensureCommunityTable(db), ensureCatAlertsTable(db), ensureIdentityChecksTable(db), ensureSafetyReportsTable(db)]);
@@ -38,7 +38,7 @@ export async function DELETE(request: Request) {
       db.prepare("DELETE FROM user_reports WHERE reporter_id = ?").bind(user.userId),
       db.prepare("DELETE FROM identity_checks WHERE user_id = ?").bind(user.userId),
     ]);
-    return json({ deleted: true, removedRecords: owned.length, message: "Your PawBangla submissions, photos, reports, email subscription and identity-check record were deleted. This does not delete your ChatGPT account or emails already sent." });
+    return json({ deleted: true, removedRecords: owned.length, message: "Your PawBangla submissions, photos, reports, email subscription and identity-check record were deleted. This does not delete your Firebase Authentication account or emails already sent." });
   } catch {
     return json({ error: "Deletion could not be completed. Your remaining PawBangla data has not been confirmed deleted; please retry or use the contact email in the footer." }, 503);
   }

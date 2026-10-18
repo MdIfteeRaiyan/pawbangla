@@ -39,7 +39,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT before submitting a listing." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla before submitting a listing." }, 401);
   let memberAccount;
   try { memberAccount = await getMemberAccount(runtime().db, user.userId); }
   catch { return json({ error: "Account details are temporarily unavailable. Please try again." }, 503); }

@@ -38,7 +38,7 @@ export async function GET() {
 export async function POST(request: Request) {
   if (!sameOrigin(request)) return json({ error: "Request origin could not be verified." }, 403);
   const user = await requireUser();
-  if (!user) return json({ error: "Sign in with ChatGPT to report a pet SOS." }, 401);
+  if (!user) return json({ error: "Sign in to PawBangla to report a pet SOS." }, 401);
   try {
     if (!await getMemberAccount(runtime().db, user.userId)) return json({ error: "Create your PawBangla account before posting. Pet SOS reports are available immediately after account setup.", code: "ACCOUNT_REQUIRED" }, 403);
   } catch { return json({ error: "Account details are temporarily unavailable. Please try again." }, 503); }

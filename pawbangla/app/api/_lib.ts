@@ -1,5 +1,5 @@
 import { env } from "cloudflare:workers";
-import { getChatGPTUser } from "../chatgpt-auth";
+import { getAuthenticatedUser } from "../firebase-auth";
 
 export function json(data: unknown, status = 200) {
   return Response.json(data, {
@@ -255,11 +255,11 @@ export async function ensureIdentityChecksTable(db: D1Database) {
 }
 
 export async function requireUser() {
-  return getChatGPTUser();
+  return getAuthenticatedUser();
 }
 
 export async function requireReviewer() {
-  const user = await getChatGPTUser();
+  const user = await getAuthenticatedUser();
   const allowlist = (env.PAWBANGLA_REVIEWER_EMAILS ?? "")
     .split(",")
     .map((value) => value.trim().toLowerCase())
@@ -271,7 +271,7 @@ export async function requireReviewer() {
 }
 
 export async function requireOwner() {
-  const user = await getChatGPTUser();
+  const user = await getAuthenticatedUser();
   const ownerEmail = (env.PAWBANGLA_OWNER_EMAIL ?? "").trim().toLowerCase();
   if (!user || !ownerEmail || user.email.toLowerCase() !== ownerEmail) return null;
   return user;
