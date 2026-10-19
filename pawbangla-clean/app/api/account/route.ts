@@ -21,7 +21,8 @@ export async function GET() {
       canPostAdoption: Date.now() >= eligibleAt,
       email: account.email,
     });
-  } catch {
+  } catch (error) {
+    console.error("PawBangla account GET failed", error);
     return json({ error: "Account details are temporarily unavailable." }, 503);
   }
 }
@@ -58,7 +59,8 @@ export async function POST(request: Request) {
       canPostAdoption: Date.now() >= eligibleAt,
       email: account.email,
     }, 201);
-  } catch {
+  } catch (error) {
+    console.error("PawBangla account POST failed", error);
     return json({ error: "Could not save your account details. Please try again." }, 503);
   }
 }
