@@ -1,11 +1,12 @@
 import { blockedSaleText, ensureCommunityTable, ensurePostLikesTable, getMemberAccount, json, requireUser, runtime, sameOrigin, sanitizeImage } from "../_lib";
 import { queueReviewerNotice } from "../_reviewer-mail";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCommunityTable(db);
     await ensurePostLikesTable(db);
     const user = await requireUser();
@@ -33,7 +34,7 @@ export async function POST(request: Request) {
   const user = await requireUser();
   if (!user) return json({ error: "Sign in to PawBangla before sharing a photo." }, 401);
   try {
-    if (!await getMemberAccount(runtime().db, user.userId)) return json({ error: "Create your PawBangla account before sharing. Photo posts are available immediately after account setup.", code: "ACCOUNT_REQUIRED" }, 403);
+    if (!await getMemberAccount(databaseRuntime().db, user.userId)) return json({ error: "Create your PawBangla account before sharing. Photo posts are available immediately after account setup.", code: "ACCOUNT_REQUIRED" }, 403);
   } catch { return json({ error: "Account details are temporarily unavailable. Please try again." }, 503); }
   if (Number(request.headers.get("content-length") || 0) > 6 * 1024 * 1024) {
     return json({ error: "Photo and form must be smaller than 6 MB." }, 413);

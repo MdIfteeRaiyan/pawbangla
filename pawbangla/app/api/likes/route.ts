@@ -1,4 +1,5 @@
-import { ensureCommunityTable, ensurePostLikesTable, json, requireUser, runtime, sameOrigin } from "../_lib";
+import { ensureCommunityTable, ensurePostLikesTable, json, requireUser, sameOrigin } from "../_lib";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     if (type === "community") await ensureCommunityTable(db);
     await ensurePostLikesTable(db);
 

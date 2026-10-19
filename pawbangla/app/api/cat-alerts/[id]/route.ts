@@ -1,4 +1,5 @@
-import { ensureCatAlertsTable, json, requireUser, runtime, sameOrigin } from "../../_lib";
+import { ensureCatAlertsTable, json, requireUser, sameOrigin } from "../../_lib";
+import { databaseRuntime } from "../../_db";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,7 @@ export async function PATCH(request: Request, context: { params: Promise<{ id: s
   if (action !== "resolve") return json({ error: "Choose resolve to close this alert." }, 400);
   try {
     const { id } = await context.params;
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCatAlertsTable(db);
     const result = await db.prepare(`UPDATE cat_alerts SET resolved_at = ?
       WHERE id = ? AND owner_id = ? AND status = 'approved' AND resolved_at IS NULL`)

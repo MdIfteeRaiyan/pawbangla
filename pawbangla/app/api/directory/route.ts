@@ -1,11 +1,12 @@
 import { DIRECTORY_LAST_SOURCE_REVIEWED, DIRECTORY_LISTINGS } from "../../directory-data";
-import { ensureDirectoryOverridesTable, json, runtime } from "../_lib";
+import { ensureDirectoryOverridesTable, json } from "../_lib";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureDirectoryOverridesTable(db);
     const result = await db.prepare(`SELECT listing_id AS id, phone, phone_display AS phoneDisplay, address,
       division, coverage, service_type AS serviceType, source_url AS sourceUrl, source_label AS sourceLabel,

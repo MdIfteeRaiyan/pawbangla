@@ -1,4 +1,5 @@
-import { ensureCatAlertsTable, runtime } from "../../_lib";
+import { ensureCatAlertsTable } from "../../_lib";
+import { databaseRuntime } from "../../_db";
 
 export const dynamic = "force-dynamic";
 
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
   const token = tokenFrom(request);
   if (!token) return page("This unsubscribe link is invalid or incomplete. You can also turn alerts off in the Cat SOS section after signing in.");
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCatAlertsTable(db);
     const row = await db.prepare("SELECT owner_id FROM cat_alert_subscribers WHERE unsubscribe_token = ?").bind(token).first();
     return row
@@ -38,7 +39,7 @@ export async function POST(request: Request) {
   const token = tokenFrom(request);
   if (!token) return page("This unsubscribe link is invalid or incomplete.");
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCatAlertsTable(db);
     const subscriber = await db.prepare("SELECT email FROM cat_alert_subscribers WHERE unsubscribe_token = ?")
       .bind(token).first<{ email: string }>();

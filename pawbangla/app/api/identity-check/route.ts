@@ -1,5 +1,6 @@
-import { ensureIdentityChecksTable, json, requireUser, runtime, sameOrigin } from "../_lib";
+import { ensureIdentityChecksTable, json, requireUser, sameOrigin } from "../_lib";
 import { queueReviewerNotice } from "../_reviewer-mail";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
@@ -7,7 +8,7 @@ export async function GET() {
   const user = await requireUser();
   if (!user) return json({ authenticated: false, status: "unverified" });
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureIdentityChecksTable(db);
     const row = await db.prepare("SELECT status, requested_at AS requestedAt, reviewed_at AS reviewedAt FROM identity_checks WHERE user_id = ?")
       .bind(user.userId).first<{ status: string; requestedAt: number; reviewedAt: number | null }>();
@@ -26,7 +27,7 @@ export async function POST(request: Request) {
     return json({ error: "Enter your full name and agree to the private in-person check." }, 400);
   }
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureIdentityChecksTable(db);
     const current = await db.prepare("SELECT status, requested_at AS requestedAt FROM identity_checks WHERE user_id = ?")
       .bind(user.userId).first<{ status: string; requestedAt: number }>();

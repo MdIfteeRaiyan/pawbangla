@@ -1,12 +1,13 @@
 import { ensureCatAlertsTable, getMemberAccount, json, requireUser, runtime, sameOrigin, sanitizeImage } from "../_lib";
 import { queueAndSendAlertEmails } from "./_mail";
 import { queueReviewerNotice } from "../_reviewer-mail";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     await ensureCatAlertsTable(db);
     const user = await requireUser();
     const result = await db.prepare(`SELECT id, owner_id AS ownerId, report_type AS type, species, cat_description AS catDescription,
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   const user = await requireUser();
   if (!user) return json({ error: "Sign in to PawBangla to report a pet SOS." }, 401);
   try {
-    if (!await getMemberAccount(runtime().db, user.userId)) return json({ error: "Create your PawBangla account before posting. Pet SOS reports are available immediately after account setup.", code: "ACCOUNT_REQUIRED" }, 403);
+  if (!await getMemberAccount(databaseRuntime().db, user.userId)) return json({ error: "Create your PawBangla account before posting. Pet SOS reports are available immediately after account setup.", code: "ACCOUNT_REQUIRED" }, 403);
   } catch { return json({ error: "Account details are temporarily unavailable. Please try again." }, 503); }
   if (Number(request.headers.get("content-length") || 0) > 6 * 1024 * 1024) {
     return json({ error: "Photo and report must be smaller than 6 MB." }, 413);

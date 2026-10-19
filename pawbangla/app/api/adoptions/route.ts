@@ -1,11 +1,12 @@
 import { blockedSaleText, ensureIdentityChecksTable, ensurePostLikesTable, getMemberAccount, json, requireUser, runtime, sameOrigin, sanitizeImage } from "../_lib";
 import { queueReviewerNotice } from "../_reviewer-mail";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     const user = await requireUser();
     await ensurePostLikesTable(db);
     let identityChecked = false;
@@ -41,7 +42,7 @@ export async function POST(request: Request) {
   const user = await requireUser();
   if (!user) return json({ error: "Sign in to PawBangla before submitting a listing." }, 401);
   let memberAccount;
-  try { memberAccount = await getMemberAccount(runtime().db, user.userId); }
+  try { memberAccount = await getMemberAccount(databaseRuntime().db, user.userId); }
   catch { return json({ error: "Account details are temporarily unavailable. Please try again." }, 503); }
   if (!memberAccount) return json({ error: "Create your PawBangla account before submitting. Community photos and SOS reports are available as soon as your account is created.", code: "ACCOUNT_REQUIRED" }, 403);
   const adoptionEligibleAt = memberAccount.createdAt + 12 * 60 * 60 * 1000;

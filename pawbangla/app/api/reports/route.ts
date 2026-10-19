@@ -1,6 +1,7 @@
 import { DIRECTORY_LISTINGS } from "../../directory-data";
 import { queueReviewerNotice } from "../_reviewer-mail";
-import { ensureCatAlertsTable, ensureCommunityTable, ensureDirectoryOverridesTable, ensureSafetyReportsTable, json, requireUser, runtime, sameOrigin } from "../_lib";
+import { ensureCatAlertsTable, ensureCommunityTable, ensureDirectoryOverridesTable, ensureSafetyReportsTable, json, requireUser, sameOrigin } from "../_lib";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
@@ -39,7 +40,7 @@ export async function POST(request: Request) {
   if (targetType === "directory" && !listing) return json({ error: "This directory listing could not be found." }, 404);
 
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     if (targetType === "directory") {
       await ensureDirectoryOverridesTable(db);
       const override = await db.prepare("SELECT active FROM directory_listing_overrides WHERE listing_id = ?").bind(targetId).first<{ active: number }>();
