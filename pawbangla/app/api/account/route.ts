@@ -1,4 +1,5 @@
-import { getMemberAccount, json, requireUser, runtime, sameOrigin } from "../_lib";
+import { getMemberAccount, json, requireUser, sameOrigin } from "../_lib";
+import { databaseRuntime } from "../_db";
 
 export const dynamic = "force-dynamic";
 
@@ -9,7 +10,7 @@ export async function GET() {
   const user = await requireUser();
   if (!user) return json({ error: "Sign in to open your PawBangla account.", code: "SIGN_IN_REQUIRED" }, 401);
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     const account = await getMemberAccount(db, user.userId);
     if (!account) return json({ exists: false, email: user.email });
     const eligibleAt = account.createdAt + ADOPTION_WAIT_MS;
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { db } = runtime();
+    const { db } = databaseRuntime();
     const now = Date.now();
     await db.prepare(`INSERT INTO pawbangla_accounts (user_id, email, display_name, division, created_at, updated_at)
       VALUES (?, ?, ?, ?, ?, ?)
