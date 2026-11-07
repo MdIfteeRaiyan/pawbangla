@@ -27,6 +27,8 @@ const managedLinux = readExecutionProfile() === "managed-linux";
 const localBindingConfig = {
   main: "./build/sites-worker.ts",
   compatibility_flags: ["nodejs_compat"],
+  // Keep dashboard-managed production variables when Workers Builds deploys.
+  keep_vars: true,
   d1_databases: d1
     ? [
         {

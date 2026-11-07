@@ -8,11 +8,13 @@ This repository builds a Cloudflare Worker using Vinext and the Cloudflare Vite 
 
 ### Workers Builds commands
 
-- Root directory: `/`
+- Root directory: `/pawbangla` (this GitHub repository contains the app in the `pawbangla` subfolder)
 - Build command: `pnpm run build`
 - Deploy command: `pnpm run deploy:cloudflare`
 - Preview command: `pnpm run preview:cloudflare`
 - Worker name: `pawbangla`
+
+The generated Wrangler configuration also sets `keep_vars: true`, and the package deploy script uses `--keep-vars`. In Workers Builds, set the project root to `/pawbangla` and the deploy command to `pnpm run deploy:cloudflare`. Dashboard variables can disappear if a deployment runs Wrangler without variable preservation; Cloudflare documents `keep_vars` as the control that retains them. Secrets are retained across Wrangler deploys.
 
 Add these **build variables** in Workers Builds before its first build. They are resource identifiers/names, not passwords:
 
